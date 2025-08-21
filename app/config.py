@@ -1,0 +1,1 @@
+DB_URL = "postgresql+asyncpg://postgres:your_password_here@localhost:5433/postgres"
