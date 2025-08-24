@@ -1,12 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import uvicorn
 from contextlib import asynccontextmanager
 from database import db_manager, redis_manager
+from pathlib import Path
+from services.chat import manager
 
 # from routes import router as photo_router
+from routes import *
 from config import settings
 from models.base import Base
+from logger_config import get_logger
 
+logger = get_logger(__name__)
 
 DATABASE_URL = settings.DATABASE_URL
 REDIS_URL = settings.REDIS_URL
@@ -14,36 +21,56 @@ REDIS_URL = settings.REDIS_URL
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("INFO:     Start application")
+    logger.info("Старт приложения")
     try:
-        print("INFO:     Init DB")
+        logger.info("Запуск БД")
         db_manager.init_db(database_url=DATABASE_URL)
 
-        print("INFO:     Create DB tables")
+        logger.info("Создание таблиц")
         await db_manager.create_tables()
 
-        print("INFO:     Init Redis")
+        logger.info("Запуск Redis")
         await redis_manager.init_redis(database_url=REDIS_URL)
 
-        print("INFO:     Application up")
+        logger.info("Приложение запущено")
 
     except Exception as e:
-        print(f"ERROR:     Startup failed: {e}")
+        logger.error(f"Ошибка запуска приложения: {e}")
         raise
 
     yield
 
-    print("INFO:     Shutdown...")
-    print("INFO:     Application stopped successfully")
+    logger.info("Остановка...")
+    logger.info("Приложение успешно остановлено")
 
 
 app = FastAPI(lifespan=lifespan)
 # app.include_router(router=photo_router, prefix="/api/photo")
 
 
+@app.websocket("/ws/chat")
+async def websocket_endpoint(ws: WebSocket):
+    await manager.connect(ws)
+    try:
+        while True:
+            data = await ws.receive_text()
+            await manager.broadcast(f"Пользователь сказал: {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(ws)
+
+
+BASE_DIR = Path(__file__).parent.parent
+app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+
+
 @app.get("/")
 def start():
-    return {"message": "Go to /docs#/"}
+    return {"message": "Перейди в /docs#/"}
+
+
+@app.get("/chat")
+async def get_chat():
+    return FileResponse(BASE_DIR / "frontend" / "index.html")
 
 
 if __name__ == "__main__":
