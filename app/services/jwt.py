@@ -2,44 +2,74 @@ import bcrypt
 import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from datetime import datetime, timedelta, timezone
 import logging
-import asyncio
 
 
 
-"""
-Сделай
- - разделение ответственности в виде классов
- - в асинхронность переведи
- - обработку ошибок в encode_jwt и decode_jwt 
-"""
+
+
 logger = logging.getLogger(__name__)
 
-private_key = rsa.generate_private_key(
-    public_exponent=65537,
-    key_size=2048,
-)
 
-with open("jwt_private.pem", "wb") as f:
-    f.write(
-        private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption(),
-        )
+class JWTPrivateKeyGenerationError(Exception):
+    pass
+
+class JWTPrivateKeySaveError(Exception):
+    pass
+
+
+def generate_private_key(public_exponent : int = 65537 , key_size : int = 2048 )-> RSAPrivateKey:
+ try:
+    return rsa.generate_private_key(
+        public_exponent = public_exponent,
+        key_size= key_size,
     )
+ except Exception as e:
+            logger.error(f'Ошибка создания JWTPrivateKey: {e}', exc_info=True)
+            raise JWTPrivateKeyGenerationError(f'Ошибка создания приватного ключа: {e}') from e
 
-public_key = private_key.public_key()
+def save_private_key(private_key , 
+                     filename = 'jwt_private.pem',
+                     encoding = serialization.Encoding.PEM,
+                     format=serialization.PrivateFormat.PKCS8,
+                     encryption_algorithm = serialization.NoEncryption(),
+                     ):
+    
+  
+    try:
+        with open(filename, "wb") as f:
+            f.write(
+                private_key.private_bytes(
+                    encoding=encoding,
+                    format=format,
+                    encryption_algorithm=encryption_algorithm,
+                )
+            )
+    except Exception as e:
+            logger.error(f'Ошибка сохранения JWTPrivateKey: {e}', exc_info=True)
+            raise JWTPrivateKeySaveError(f'Ошибка сохранения приватного ключа: {e}') from e
+    
+class JWTPublicKeySaveError(Exception):
+    pass
+def save_public_key(public_key,
+                    filename = 'jwt_public.pem',
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo,
+):
 
-
-with open("jwt_public.pem", "wb") as f:
-    f.write(
-        public_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo,
-        )
-    )
+    try:
+        with open(filename, "wb") as f:
+            f.write(
+                public_key.public_bytes(
+                    encoding=encoding,
+                    format=format,
+                )
+            )
+    except Exception as e:
+            logger.error(f'Ошибка сохранения JWTPublicKey: {e}', exc_info=True)
+            raise JWTPublicKeySaveError(f'Ошибка сохранения публичного ключа: {e}') from e
 
 class JWTEncodeError(Exception):
     pass
@@ -49,7 +79,7 @@ class JWTEncoder:
     def __init__(self , private_key : rsa.RSAPrivateKey):
         self.private_key = private_key
         
-    async def encode_jwt(
+    def encode_jwt(
         self,
         payload: dict,
         algorithm: str = "RS256",
@@ -64,21 +94,18 @@ class JWTEncoder:
                 "iat": int(datetime.now(timezone.utc).timestamp())
             })
             
-            # Используем run_in_executor для асинхронности
-            loop = asyncio.get_event_loop()
-            encoded = await loop.run_in_executor(
-                None,
-                lambda: jwt.encode(
+            
+            encoded = jwt.encode(
                     to_encode,
                     self.private_key,
                     algorithm=algorithm
                 )
-            )
+            
             return encoded
             
         except Exception as e:
-            logger.error(f'JWT encoding error: {e}', exc_info=True)
-            raise JWTEncodeError(f'Encoding failed: {e}') from e
+            logger.error(f'Ошибка кодирования JWT: {e}', exc_info=True)
+            raise JWTEncodeError(f'Ошибка кодирования: {e}') from e
     
 
 class JWTDecodeError(Exception):
@@ -90,29 +117,22 @@ class JWTDecoder:
         self.public_key = public_key
 
 
-    async def decode_jwt(self , token : str, algorithms : list[str] = None):
+    def decode_jwt(self , token : str, algorithms : list[str] = None):
         if algorithms is None:
             algorithms = ['RS256']
         try:
-            decoded = await asyncio.to_thread(
-                self._sync_decode, 
+            decoded = jwt.decode(
                 token,
-                algorithms,
-                )
+                self.public_key,
+                algorithms=algorithms,
+                options={"require": ["exp"]}
+            )
             return decoded
         
         except Exception as e:
             logger.error(f'Ошибка декодирования:{e}' , exc_info= True)
             raise JWTDecodeError(f'Не удалось обработать данные') from e
         
-    # Вызов синхрнонной функции декодирования в отдельном потоке
-    def _sync_decode(self, token : str , algorithms : list[str]) -> dict:
-        return  jwt.decode(
-            token, 
-            self.public_key,
-            algorithms=algorithms,
-            options={"require": ["exp"]}
-        )
 
 def hash_password(password: str) -> bytes:
     salt = bcrypt.gensalt()
