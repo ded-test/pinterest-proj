@@ -4,6 +4,9 @@ import redis
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from models.base import Base
+from logger_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class DBManager:
@@ -17,22 +20,22 @@ class DBManager:
             bind=self.engine, expire_on_commit=False
         )
         self._database_url = database_url
-        print(f"Database initialized: {database_url}")
+        logger.info("База данных запущена")
 
     async def create_tables(self):
         if not self.engine:
-            raise RuntimeError("Call init_db() first")
+            raise RuntimeError("Вызови init_db() сначала")
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-        print("Database tables created successfully")
+        logger.info("Таблицы базы данных успешно созданы")
 
     async def drop_tables(self):
         if not self.engine:
-            raise RuntimeError("Call init_db() first")
+            raise RuntimeError("Вызови init_db() сначала")
 
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
-        print("Database tables dropped successfully")
+        logger.info("Таблицы базы данных успешно удалены")
 
     async def recreate_tables(self):
         await self.drop_tables()
@@ -44,12 +47,12 @@ class DBManager:
             self.engine = None
             self.session_factory = None
             self._database_url = None
-            print("DatabaseManager closed")
+            logger.info("DatabaseManager закрыт")
 
     @asynccontextmanager
     async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
         if not self.session_factory:
-            raise RuntimeError("Call init_db() first")
+            raise RuntimeError("Вызови init_db() сначала")
 
         session = self.session_factory()
         try:
@@ -73,24 +76,24 @@ class RedisManager:
             )
             self.redis.ping()
             self._database_url = database_url
-            print(f"Redis initialized: {database_url}")
+            logger.info("Redis запущен")
         except Exception as e:
             self.redis = None
-            raise RuntimeError(f"Redis initialization failed: {e}")
+            raise RuntimeError(f"Ошибка запуска Redis: {e}")
 
     async def set(self, key: str, value: str, expire: Optional[int] = None):
         if not self.redis:
-            raise RuntimeError("Call init_redis() first")
+            raise RuntimeError("Вызови init_db() сначала")
         await self.redis.set(key, value, ex=expire)
 
     async def get(self, key: str) -> Optional[str]:
         if not self.redis:
-            raise RuntimeError("Call init_redis() first")
+            raise RuntimeError("Вызови init_db() сначала")
         return await self.redis.get(key)
 
     async def delete(self, key: str):
         if not self.redis:
-            raise RuntimeError("Call init_redis() first")
+            raise RuntimeError("Вызови init_db() сначала")
         await self.redis.delete(key)
 
     async def close(self):
@@ -98,12 +101,12 @@ class RedisManager:
             await self.redis.close()
             self.redis = None
             self._database_url = None
-            print("RedisManager closed")
+            logger.info("RedisManager закрыт")
 
     @asynccontextmanager
     async def get_client(self) -> AsyncGenerator[redis.Redis, None]:
         if not self.redis:
-            raise RuntimeError("Call init_redis() first")
+            raise RuntimeError("Вызови init_db() сначала")
 
         try:
             yield self.redis

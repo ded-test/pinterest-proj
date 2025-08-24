@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #212529;
+        }
+
+        .chat-container {
+            width: 600px;
+            height: 800px;
+            display: flex;
+            flex-direction: column;
+            background: #343A40;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(134, 54, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #495057;
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        #chat {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #6C757D;
+        }
+
+        .message {
+            padding: 12px 18px;
+            border-radius: 16px;
+            max-width: 70%;
+            line-height: 1.4;
+            font-size: 15px;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        .you {
+            background: #ADB5BD;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .other {
+            background: #e5e5ea;
+            color: black;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        #input-area {
+            display: flex;
+            padding: 12px;
+            background: #495057;
+            border-top: 1px solid #eee;
+        }
+
+        #message {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        #message:focus {
+            border-color: #ADB5BD;
+        }
+
+        #send {
+            margin-left: 12px;
+            padding: 12px 24px;
+            background: white;
+            color: #343A40;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+
+        #send:hover {
+            background: #6C757D;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Чат</div>
+        <div id="chat"></div>
+        <div id="input-area">
+            <input type="text" id="message" placeholder="Пиши тут..." />
+            <button id="send">➤</button>
+        </div>
+    </div>
+
+    <script>
+        let ws = new WebSocket("ws://" + window.location.host + "/ws/chat");
+
+        ws.onmessage = function (event) {
+            let chat = document.getElementById("chat");
+            let msg = document.createElement("div");
+            msg.classList.add("message", "other");
+            msg.textContent = event.data;
+            chat.appendChild(msg);
+            chat.scrollTop = chat.scrollHeight;
+        };
+
+        function sendMessage() {
+            let input = document.getElementById("message");
+            if (input.value.trim() !== "") {
+                ws.send(input.value);
+
+                let chat = document.getElementById("chat");
+                let msg = document.createElement("div");
+                msg.classList.add("message", "you");
+                msg.textContent = input.value;
+                chat.appendChild(msg);
+                chat.scrollTop = chat.scrollHeight;
+
+                input.value = "";
+            }
+        }
+
+        document.getElementById("send").onclick = sendMessage;
+        document.getElementById("message").addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+
+</html>
