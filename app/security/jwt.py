@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from datetime import datetime, timedelta, timezone
 
-from app.logger_config import get_logger
+from app.core.logger_config import get_logger
 
 
 logger = get_logger(__name__)
@@ -137,19 +137,3 @@ class JWTDecoder:
         except Exception as e:
             logger.error(f"Ошибка декодирования:{e}", exc_info=True)
             raise JWTDecodeError(f"Не удалось обработать данные") from e
-
-
-def hash_password(password: str) -> bytes:
-    salt = bcrypt.gensalt()
-    pwd_bytes: bytes = password.encode()
-    return bcrypt.hashpw(pwd_bytes, salt)
-
-
-def validate_password(
-    password: str,
-    hash_password: bytes,
-) -> bool:
-    return bcrypt.checkpw(
-        password=password.encode(),
-        hashed_password=hash_password,
-    )

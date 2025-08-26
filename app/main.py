@@ -6,12 +6,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 # from routes import router as photo_router
-from app.database import db_manager, redis_manager
+from app.core.database import db_manager, redis_manager
 from app.services.chat import manager
 from app.routes import *
-from app.config import settings
+from app.core.config import settings
 from app.models.base import Base
-from logger_config import get_logger
+from app.core.logger_config import get_logger
 
 logger = get_logger(__name__)
 
