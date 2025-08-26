@@ -11,4 +11,4 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(unique=True)
     hashed_password: Mapped[bytes]
-    pins: Mapped[list["Pin"]] = relationship("Pin", back_populates="user")
+    # pins: Mapped[list["Pin"]] = relationship("Pin", back_populates="user")
