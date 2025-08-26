@@ -15,5 +15,3 @@
 
 import passlib
 from app.config import settings
-
-PEPPER_SECRET = settings.PEPPER_SECRET
