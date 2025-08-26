@@ -8,7 +8,9 @@ from pathlib import Path
 # from routes import router as photo_router
 from app.core.database import db_manager, redis_manager
 from app.services.chat import manager
-from app.routes import *
+from app.routes import (
+    user_router,
+)
 from app.core.config import settings
 from app.models.base import Base
 from app.core.logger_config import get_logger
@@ -45,6 +47,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(router=user_router)
 # app.include_router(router=photo_router, prefix="/api/photo")
 
 
@@ -59,8 +62,11 @@ async def websocket_endpoint(ws: WebSocket):
         manager.disconnect(ws)
 
 
-BASE_DIR = Path(__file__).parent.parent
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+current_dir = Path(__file__).parent
+project_root = current_dir.parent
+frontend_dir = project_root / "frontend"
+
+app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
 
 
 @app.get("/")
@@ -70,7 +76,7 @@ def start():
 
 @app.get("/chat")
 async def get_chat():
-    return FileResponse(BASE_DIR / "frontend" / "index.html")
+    return FileResponse(frontend_dir / "index.html")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict, field_validator, model_validator
 from typing import Optional
-from app.security.password import (
+from security.password import (
     validate_password_strength,
     get_password_hash,
     verify_password,
@@ -10,7 +10,6 @@ from app.security.password import (
 class UserBase(BaseModel):
     username: str
     email: EmailStr
-    pins: list
 
     @field_validator("username")
     @classmethod
@@ -77,3 +76,8 @@ class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
