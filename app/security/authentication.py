@@ -16,4 +16,4 @@
 import passlib
 from app.config import settings
 
-PEPPER_KEY = settings.PEPPER_KEY
+PEPPER_SECRET = settings.PEPPER_SECRET

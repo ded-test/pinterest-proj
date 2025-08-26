@@ -1,9 +1,11 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr
 
 
-class UserSchema(BaseModel):
-    model_config = ConfigDict(strict=True)
+class UserBase(BaseModel):
+    id: int
     username: str
     password: bytes
     email: EmailStr | None = None
-    active: bool = True
+    
+class UserCreate(UserBase):
+    

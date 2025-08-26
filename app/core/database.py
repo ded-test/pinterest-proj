@@ -5,7 +5,7 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.models.base import Base
-from app.logger_config import get_logger
+from app.core.logger_config import get_logger
 
 logger = get_logger(__name__)
 

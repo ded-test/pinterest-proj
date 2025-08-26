@@ -13,5 +13,4 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(unique=True)
     hashed_password: Mapped[str]
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
     pins: Mapped[list["Pin"]] = relationship("Pin", back_populates="user")
