@@ -1,10 +1,3 @@
-"""
-Create
-Read
-Update
-Delete
-"""
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.photo import Photo
 from sqlalchemy.engine import Result
