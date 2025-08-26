@@ -1,9 +1,10 @@
 import os
-
+from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from pydantic_settings import BaseSettings
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = Path(current_dir).parent.parent
 os.chdir(current_dir)
 dotenv_path = find_dotenv(".env")
 load_dotenv(dotenv_path)
@@ -11,7 +12,7 @@ load_dotenv(dotenv_path)
 
 class Settings(BaseSettings):
     SECRET_KEY: str
-    PEPPER_KEY: str
+    PEPPER_SECRET: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_DAYS: int

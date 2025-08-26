@@ -3,7 +3,6 @@
 
 1. Какие данные мы принимает? username, email, password
 2. На вход дается пароль что мы с ним делаем? Хэшируем с помощью соли и перца + bcrypt
-3. Где храним соль? Соль храним в hashed_password в бд после точки
 4. Где храним перец? Храним как секретный ключ в .env
 5. Создание ручки
 6. Проверка есть ли такие уже в бд данные (username, email)
@@ -15,5 +14,3 @@
 
 import passlib
 from app.config import settings
-
-PEPPER_KEY = settings.PEPPER_KEY
