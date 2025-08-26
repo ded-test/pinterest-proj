@@ -3,14 +3,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import uvicorn
 from contextlib import asynccontextmanager
-from database import db_manager, redis_manager
 from pathlib import Path
-from services.chat import manager
 
 # from routes import router as photo_router
-from routes import *
-from config import settings
-from models.base import Base
+from app.database import db_manager, redis_manager
+from app.services.chat import manager
+from app.routes import *
+from app.config import settings
+from app.models.base import Base
 from logger_config import get_logger
 
 logger = get_logger(__name__)
