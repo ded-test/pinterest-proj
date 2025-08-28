@@ -7,10 +7,14 @@ class Pin(Base):
     __tablename__ = "pins"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(100))
-    description: Mapped[str] = mapped_column(String(500))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    title: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str] = mapped_column(String(500), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+
     photos: Mapped[list["Photo"]] = relationship(
-        "Photo", back_populates="pin", cascade="all, delete-orphan"
+        "Photo",
+        back_populates="pin",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )
     user: Mapped["User"] = relationship("User", back_populates="pins")
