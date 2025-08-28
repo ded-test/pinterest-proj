@@ -13,4 +13,4 @@
 """
 
 import passlib
-from app.config import settings
+from config import settings

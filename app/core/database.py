@@ -4,8 +4,8 @@ import redis
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from app.models.base import Base
-from app.core.logger_config import get_logger
+from models.base import Base
+from core.logger_config import get_logger
 
 logger = get_logger(__name__)
 

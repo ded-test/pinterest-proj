@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from datetime import datetime, timedelta, timezone
 
-from app.core.logger_config import get_logger
+from core.logger_config import get_logger
 
 
 logger = get_logger(__name__)
