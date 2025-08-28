@@ -11,6 +11,3 @@
 
 В ЭТО ФАЙЛЕ БУДЕТ ЛОГИКА ХЭШИРОВАНИЕ и ПРОВЕРКИ НА СУЩЕСТВОВАНИЕ В БД
 """
-
-import passlib
-from config import settings
