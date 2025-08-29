@@ -6,7 +6,6 @@ from aiogram.enums import ParseMode
 
 from config import config
 from handlers import start, common
-from services.middleware import UserMiddleware
 
 
 async def main():
@@ -16,8 +15,6 @@ async def main():
         token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     dp = Dispatcher()
-
-    dp.update.middleware(UserMiddleware())
 
     dp.include_router(start.router)
     dp.include_router(common.router)
