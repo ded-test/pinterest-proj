@@ -1,5 +1,5 @@
 __all__ = ["Photo", "Pin", "User"]
 
-from app.models.photo import Photo
-from app.models.pin import Pin
-from app.models.user import User
+from models.photo import Photo
+from models.pin import Pin
+from models.user import User
