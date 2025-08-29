@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_PASS: str
 
+    RABBITMQ_HOST : str
+    RABBITMQ_PORT : int
+    RABBITMQ_USER : str
+    RABBITMQ_PASS : str
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
@@ -35,7 +40,10 @@ class Settings(BaseSettings):
     @property
     def REDIS_URL(self) -> str:
         return f"redis://:{self.REDIS_PASS}@{self.REDIS_HOST}:{self.REDIS_PORT}"
-
+    
+    @property
+    def RABBIT_URL(self) -> str:
+        return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASS}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/"
 
 settings = Settings()
 
@@ -48,7 +56,7 @@ class JWTConfig:
         self.priv_filename = os.getenv("PRIV_FILE_NAME", "private.pem")
         self.algorithm = os.getenv("ALGORITHM", "RS256")
         self.default_algorithms = ["RS256"]
-        self.token_expire_minutes = 15
+        self.token_expire_minutes = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES' , '15')
 
     @classmethod
     def get_jwt_config(cls):
