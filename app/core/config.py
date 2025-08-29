@@ -38,3 +38,20 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+class JWTConfig:
+    _instance = None  # Ленивая инициализация , патернн Singleton
+
+    def __init__(self):
+        self.pub_filename = os.getenv("PUB_FILE_NAME", "public.pem")
+        self.priv_filename = os.getenv("PRIV_FILE_NAME", "private.pem")
+        self.algorithm = os.getenv("ALGORITHM", "RS256")
+        self.default_algorithms = ["RS256"]
+        self.token_expire_minutes = 15
+
+    @classmethod
+    def get_jwt_config(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+            return cls._instance
