@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.photo import Photo
+from models.photo import Photo
 from sqlalchemy.engine import Result
 from sqlalchemy import select
 from schemas.pin import PhotoCreateSchema
