@@ -3,11 +3,13 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from pydantic_settings import BaseSettings
 
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = Path(current_dir).parent.parent
 os.chdir(current_dir)
 dotenv_path = find_dotenv(".env")
 load_dotenv(dotenv_path)
+
 
 
 class Settings(BaseSettings):
@@ -28,7 +30,10 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_PASS: str
 
-    URL: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int
+    RABBITMQ_USER: str
+    RABBITMQ_PASS: str
 
     @property
     def DATABASE_URL(self) -> str:
@@ -37,6 +42,10 @@ class Settings(BaseSettings):
     @property
     def REDIS_URL(self) -> str:
         return f"redis://:{self.REDIS_PASS}@{self.REDIS_HOST}:{self.REDIS_PORT}"
+
+    @property
+    def RABBIT_URL(self) -> str:
+        return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASS}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/"
 
 
 settings = Settings()
@@ -50,10 +59,12 @@ class JWTConfig:
         self.priv_filename = os.getenv("PRIV_FILE_NAME", "private.pem")
         self.algorithm = os.getenv("ALGORITHM", "RS256")
         self.default_algorithms = ["RS256"]
-        self.token_expire_minutes = 15
+        self.token_expire_minutes = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15")
 
     @classmethod
     def get_jwt_config(cls):
         if cls._instance is None:
             cls._instance = cls()
             return cls._instance
+
+

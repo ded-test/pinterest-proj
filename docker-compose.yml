@@ -25,7 +25,24 @@ services:
     volumes:
       - redis_data:/data
     restart: always
+  rabbitmq:
+    image: rabbitmq:4.2-rc-management  
+    hostname: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest} 
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest} 
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}    
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    restart: always 
+
+  
 
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq-data:
