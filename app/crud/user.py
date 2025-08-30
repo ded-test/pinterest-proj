@@ -2,15 +2,15 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from security.password import verify_password
-from models.user import User
-from security.password import (
+from app.security.password import verify_password
+from app.models.user import User
+from app.security.password import (
     get_password_hash,
     verify_password,
     validate_password_strength,
 )
-from schemas.user import UserCreate, UserUpdate, UserChangePassword, UserLogin
-from core.logger_config import logger
+from app.schemas.user import UserCreate, UserUpdate, UserChangePassword, UserLogin
+from app.core.logger_config import logger
 
 
 class UserCRUD:

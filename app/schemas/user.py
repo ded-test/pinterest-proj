@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict, field_validator, model_validator
 from typing import Optional
-from security.password import (
+from app.security.password import (
     validate_password_strength,
     get_password_hash,
     verify_password,

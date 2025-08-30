@@ -1,19 +1,19 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 import uvicorn
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 # from routes import router as photo_router
-from core.database import db_manager, redis_manager
-from services.chat import manager
-from routes import (
+from app.core.database import db_manager, redis_manager
+from app.services.chat import manager
+from app.routes import (
     user_router,
 )
-from core.config import settings
-from models.base import Base
-from core.logger_config import get_logger
+from app.core.config import settings
+from app.models.base import Base
+from app.core.logger_config import get_logger
+from fastapi.responses import HTMLResponse
+from app.core.templates import templates
 
 logger = get_logger(__name__)
 
@@ -62,22 +62,15 @@ async def websocket_endpoint(ws: WebSocket):
         manager.disconnect(ws)
 
 
-current_dir = Path(__file__).parent
-project_root = current_dir.parent
-frontend_dir = project_root / "frontend"
-
-app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
-
-
 @app.get("/")
 def start():
     return {"message": "Перейди в /docs#/"}
 
 
-@app.get("/chat")
-async def get_chat():
-    return FileResponse(frontend_dir / "index.html")
+@app.get("/chat", response_class=HTMLResponse)
+async def get_chat(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request})
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", reload=True)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
