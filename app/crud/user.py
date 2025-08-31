@@ -99,26 +99,28 @@ class UserCRUD:
             raise
 
     @staticmethod
-    async def authenticate(
-        db: AsyncSession, username: str, password: str
-    ) -> Optional[User]:
+    async def authenticate(db: AsyncSession, user_login: UserLogin) -> Optional[User]:
         try:
-            db_user = await UserCRUD.get_by_username(db, username)
+            db_user = await UserCRUD.get_by_username(db, UserLogin.username)
             if not db_user:
-                logger.warning(f"Неудачный вход: пользователь {username} не найден")
-                return None
-
-            if not await verify_password(password, db_user.hashed_password):
                 logger.warning(
-                    f"Неудачный вход: неверный пароль для пользователя {username}"
+                    f"Неудачный вход: пользователь {UserLogin.username} не найден"
                 )
                 return None
 
-            logger.info(f"Успешный вход: пользователь {username}")
+            if not await verify_password(UserLogin.password, db_user.hashed_password):
+                logger.warning(
+                    f"Неудачный вход: неверный пароль для пользователя {UserLogin.username}"
+                )
+                return None
+
+            logger.info(f"Успешный вход: пользователь {UserLogin.username}")
             return db_user
 
         except Exception as e:
-            logger.error(f"Ошибка при аутентификации пользователя {username}: {e}")
+            logger.error(
+                f"Ошибка при аутентификации пользователя {UserLogin.username}: {e}"
+            )
             return None
 
     @staticmethod

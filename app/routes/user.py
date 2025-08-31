@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import HTMLResponse
 from app.core.templates import templates
 
 from app.core.dependencies import get_db_session
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import UserCreate, UserResponse, UserLogin
 from app.crud.user import UserCRUD
 
 app = APIRouter()
@@ -18,6 +18,9 @@ async def registration(
     return result
 
 
-@app.get("/register", response_class=HTMLResponse)
-async def register_page(request: Request):
-    return templates.TemplateResponse("registration.html", {"request": request})
+@app.post("/api/authentication", response_model=UserResponse)
+async def authentication(
+    user_login: UserLogin, db: AsyncSession = Depends(get_db_session)
+):
+    user = await UserCRUD.authenticate(db=db, user_login=user_login)
+    return user
