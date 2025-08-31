@@ -1,4 +1,3 @@
-import bcrypt
 import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -9,17 +8,10 @@ from datetime import datetime, timedelta, timezone
 from app.core.logger_config import get_logger
 from jwt import ExpiredSignatureError, InvalidTokenError, InvalidSignatureError
 from app.core.config import JWTConfig
+from app.schemas.jwt_error import *
 
 
-logger = get_logger(__name__)  # Инициализация логов
-
-
-class JWTPrivateKeyGenerationError(Exception):
-    pass
-
-
-class JWTPrivateKeySaveError(Exception):
-    pass
+logger = get_logger(__name__)
 
 
 def generate_private_key(
@@ -60,10 +52,6 @@ def save_private_key(
         raise JWTPrivateKeySaveError(f"Ошибка сохранения приватного ключа") from e
 
 
-class JWTPublicKeySaveError(Exception):
-    pass
-
-
 def save_public_key(
     public_key,
     filename=None,
@@ -85,26 +73,6 @@ def save_public_key(
     except Exception as e:
         logger.error(f"Ошибка сохранения публичного ключа", exc_info=True)
         raise JWTPublicKeySaveError(f"Ошибка сохранения публичного ключа") from e
-
-
-class JWTEncodeError(Exception):  # Общая ошибка кодирования JWT
-    pass
-
-
-class JWTInvalidPayloadError(JWTEncodeError):  # Не верный payload
-    pass
-
-
-class JWTAlgorithmError(JWTEncodeError):  # Не поддерживаемый алгоритм
-    pass
-
-
-class JWTKeyError(JWTEncodeError):  # Ошибка ключа
-    pass
-
-
-class JWTExpirationError(JWTEncodeError):  # Ошибка exp(времени жизни токена)
-    pass
 
 
 class JWTEncoder:
@@ -160,26 +128,6 @@ class JWTEncoder:
         except Exception as e:
             logger.error(f"Ошибка кодирования JWT: ", exc_info=True)
             raise JWTEncodeError(f"Неожиданая ошибка кодирования") from e
-
-
-class JWTDecodeError(Exception):
-    pass
-
-
-class JWTExpiredError(JWTDecodeError):
-    pass
-
-
-class JWTInvalidSignatureError(JWTDecodeError):
-    pass
-
-
-class JWTInvalidTokenError(JWTDecodeError):
-    pass
-
-
-class JWTFormatError(JWTDecodeError):
-    pass
 
 
 class JWTDecoder:

@@ -3,7 +3,7 @@ from typing import AsyncGenerator
 import redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database import db_manager, redis_manager
+from app.core.database import db_manager, redis_manager
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:

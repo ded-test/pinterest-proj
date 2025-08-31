@@ -2,15 +2,15 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from security.password import verify_password
-from models.user import User
-from security.password import (
+from app.security.password import verify_password
+from app.models.user import User
+from app.security.password import (
     get_password_hash,
     verify_password,
     validate_password_strength,
 )
-from schemas.user import UserCreate, UserUpdate, UserChangePassword, UserLogin
-from core.logger_config import logger
+from app.schemas.user import UserCreate, UserUpdate, UserChangePassword, UserLogin
+from app.core.logger_config import logger
 
 
 class UserCRUD:
@@ -99,26 +99,28 @@ class UserCRUD:
             raise
 
     @staticmethod
-    async def authenticate(
-        db: AsyncSession, username: str, password: str
-    ) -> Optional[User]:
+    async def authenticate(db: AsyncSession, user_login: UserLogin) -> Optional[User]:
         try:
-            db_user = await UserCRUD.get_by_username(db, username)
+            db_user = await UserCRUD.get_by_username(db, UserLogin.username)
             if not db_user:
-                logger.warning(f"Неудачный вход: пользователь {username} не найден")
-                return None
-
-            if not await verify_password(password, db_user.hashed_password):
                 logger.warning(
-                    f"Неудачный вход: неверный пароль для пользователя {username}"
+                    f"Неудачный вход: пользователь {UserLogin.username} не найден"
                 )
                 return None
 
-            logger.info(f"Успешный вход: пользователь {username}")
+            if not await verify_password(UserLogin.password, db_user.hashed_password):
+                logger.warning(
+                    f"Неудачный вход: неверный пароль для пользователя {UserLogin.username}"
+                )
+                return None
+
+            logger.info(f"Успешный вход: пользователь {UserLogin.username}")
             return db_user
 
         except Exception as e:
-            logger.error(f"Ошибка при аутентификации пользователя {username}: {e}")
+            logger.error(
+                f"Ошибка при аутентификации пользователя {UserLogin.username}: {e}"
+            )
             return None
 
     @staticmethod

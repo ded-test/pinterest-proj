@@ -11,7 +11,6 @@ dotenv_path = find_dotenv(".env")
 load_dotenv(dotenv_path)
 
 
-
 class Settings(BaseSettings):
     SECRET_KEY: str
     PEPPER_SECRET: str
@@ -19,6 +18,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_DAYS: int
     BCRYPT_ROUNDS: int
+
+    BOT_TOKEN: str
+    BOT_DATABASE_URL: str
+
+    URL: str
 
     DB_NAME: str
     DB_HOST: str
@@ -66,5 +70,3 @@ class JWTConfig:
         if cls._instance is None:
             cls._instance = cls()
             return cls._instance
-
-

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base
-from models.pin import Pin
+from app.models.base import Base
+from app.models.pin import Pin
 from sqlalchemy import String, DateTime
 import datetime
 
