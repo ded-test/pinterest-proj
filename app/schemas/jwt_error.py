@@ -1,50 +1,46 @@
-class JWTPrivateKeyGenerationError(Exception):
+# Ошибки для кодирования JWT
+
+
+class JWTEncodeError(Exception):
+    """Общая ошибка кодирования JWT"""
+
     pass
 
 
-class JWTPrivateKeySaveError(Exception):
+class JWTInvalidPayloadError(JWTEncodeError):
+    """Ошибка: payload не словарь или не сериализуется"""
+
     pass
 
 
-class JWTPublicKeySaveError(Exception):
+class JWTExpirationError(JWTEncodeError):
+    """Ошибка: неверное время жизни токена (exp)"""
+
     pass
 
 
-class JWTEncodeError(Exception):  # Общая ошибка кодирования JWT
-    pass
-
-
-class JWTInvalidPayloadError(JWTEncodeError):  # Не верный payload
-    pass
-
-
-class JWTAlgorithmError(JWTEncodeError):  # Не поддерживаемый алгоритм
-    pass
-
-
-class JWTKeyError(JWTEncodeError):  # Ошибка ключа
-    pass
-
-
-class JWTExpirationError(JWTEncodeError):  # Ошибка exp(времени жизни токена)
-    pass
+# Ошибки для декодирования JWT
 
 
 class JWTDecodeError(Exception):
+    """Общая ошибка декодирования JWT"""
+
     pass
 
 
 class JWTExpiredError(JWTDecodeError):
+    """Ошибка: токен просрочен"""
+
     pass
 
 
 class JWTInvalidSignatureError(JWTDecodeError):
+    """Ошибка: неверная подпись токена"""
+
     pass
 
 
 class JWTInvalidTokenError(JWTDecodeError):
-    pass
+    """Ошибка: токен невалидный"""
 
-
-class JWTFormatError(JWTDecodeError):
     pass

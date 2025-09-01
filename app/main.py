@@ -14,6 +14,7 @@ from app.models.base import Base
 from app.core.logger_config import get_logger
 from fastapi.responses import HTMLResponse
 from app.core.templates import templates
+from app.security.jwt import jwt_manager
 
 logger = get_logger(__name__)
 
@@ -72,5 +73,6 @@ async def get_chat(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
 
 
+# python -m app.main
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
