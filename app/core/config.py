@@ -14,15 +14,21 @@ load_dotenv(dotenv_path)
 class Settings(BaseSettings):
     SECRET_KEY: str
     PEPPER_SECRET: str
-    ALGORITHM: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    REFRESH_TOKEN_EXPIRE_DAYS: int
-    BCRYPT_ROUNDS: int
 
     BOT_TOKEN: str
     BOT_DATABASE_URL: str
 
-    URL: str
+    ACCESS_PRIVATE_KEY_PATH: str
+    ACCESS_PUBLIC_KEY_PATH: str
+
+    REFRESH_PRIVATE_KEY_PATH: str
+    REFRESH_PUBLIC_KEY_PATH: str
+
+    JWT_ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MIN: int
+    REFRESH_TOKEN_EXPIRE_MIN: int
+
+    BCRYPT_ROUNDS: int
 
     DB_NAME: str
     DB_HOST: str
@@ -39,6 +45,8 @@ class Settings(BaseSettings):
     RABBITMQ_USER: str
     RABBITMQ_PASS: str
 
+    URL: str
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
@@ -53,20 +61,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
-
-class JWTConfig:
-    _instance = None  # Ленивая инициализация , патернн Singleton
-
-    def __init__(self):
-        self.pub_filename = os.getenv("PUB_FILE_NAME", "public.pem")
-        self.priv_filename = os.getenv("PRIV_FILE_NAME", "private.pem")
-        self.algorithm = os.getenv("ALGORITHM", "RS256")
-        self.default_algorithms = ["RS256"]
-        self.token_expire_minutes = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15")
-
-    @classmethod
-    def get_jwt_config(cls):
-        if cls._instance is None:
-            cls._instance = cls()
-            return cls._instance
