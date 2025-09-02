@@ -1,7 +1,5 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, status
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.responses import HTMLResponse
-from app.core.templates import templates
 
 from app.core.dependencies import get_db_session
 from app.schemas.user import UserCreate, UserResponse, UserLogin
@@ -18,9 +16,36 @@ async def registration(
     return result
 
 
-@app.post("/api/authentication", response_model=UserResponse)
+@app.post("/api/authentication")
 async def authentication(
-    user_login: UserLogin, db: AsyncSession = Depends(get_db_session)
+    user_login: UserLogin,
+    response: Response,
+    db: AsyncSession = Depends(get_db_session),
 ):
     user = await UserCRUD.authenticate(db=db, user_login=user_login)
-    return user
+    try:
+
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=False,  # фиксани, False только для теста
+            samesite="lax",
+            max_age=jwt_manager.access_expire * 60,
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=False,  # фиксани, False только для теста
+            samesite="strict",
+            max_age=jwt_manager.refresh_expire * 60,
+        )
+
+        return {
+            "message": "Login successful",
+            "user": {"id": user.id, "username": user.username},
+        }
+    except Exception as e:
+        raise
