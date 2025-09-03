@@ -12,6 +12,7 @@ from app.schemas.jwt_error import *
 from app.core.logger_config import get_logger
 from app.core.config import settings
 import os
+import uuid
 
 logger = get_logger(__name__)
 
@@ -121,6 +122,8 @@ class JWTManager:
 
     # Access токены
     def create_access_token(self, payload: dict) -> str:
+        payload_with_jti = payload.copy()
+        payload_with_jti["jti"] = str(uuid.uuid4())
         return self._encode(payload, self.access_private_key, self.access_expire)
 
     def decode_access_token(self, token: str) -> dict:

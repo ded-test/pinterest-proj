@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.dependencies import get_db_session
 from app.schemas.user import UserCreate, UserResponse, UserLogin
 from app.crud.user import UserCRUD
+from app.crud.jwt import jwt_crud
+from app.security.jwt import jwt_manager
 
 app = APIRouter()
 
@@ -24,6 +26,8 @@ async def authentication(
 ):
     user = await UserCRUD.authenticate(db=db, user_login=user_login)
     try:
+        access_token = await jwt_crud.create_access_token(user=user)
+        refresh_token = await jwt_crud.create_refresh_token(user=user, db=db)
 
         response.set_cookie(
             key="access_token",
