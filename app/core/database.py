@@ -6,7 +6,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.models.base import Base
 from app.core.logger_config import get_logger
-import pika
+from aio_pika import connect_robust
 import asyncio
 from app.core.config import Settings
 
@@ -123,60 +123,47 @@ redis_manager = RedisManager()
 
 class RabbitManager:
     def __init__(self):
-        self.connection_params = None
+        self._connection = None
         self._rabbit_url = None
-        self.chanel = None
+        self._channel = None
+        self._is_initialized = False
 
-    def init_rabbit(self, rabbit_url: str):
+    async def init_rabbit(self, rabbit_url: str):
         try:
             self._rabbit_url = rabbit_url
-            self.connection_params = pika.URLParameters(rabbit_url)
+            self._connection = await connect_robust(rabbit_url)
+            self._channel = await self._connection.channel()
+            self._is_initialized = True
+
             logger.info("RabbitMQ параметры установлены")
         except Exception as e:
-            self.connection = None
-            self.chanel = None
-            raise RuntimeError(f"Ошибка запуска RabbitMQ: {e}")
+            self._connection = None
+            self._channel = None
+            self._is_initialized = False
+            logger.error(f"Ошибка подключения RabbitMQ: {e}")
+            raise RuntimeError(f"Ошибка запуска RabbitMQ: {e}") from e
 
-    def check_connection(self):
-        if not self._rabbit_url:
-            raise RuntimeError("Сначала вызови init_rabbit()")
-        if not self.connection:
-            try:
-                self.connection = pika.BlockingConnection(
-                    parameters=self.connection_params
-                )
-                self.chanel = self.connection.channel()
-                logger.info("Соединение с RabbitMQ установленно")
-            except Exception as e:
-                raise RuntimeError(f"Ошибка подключения к RabbitMQ: {e}")
+    async def check_connection(self) -> bool:
+        if not self._is_initialized:
+            raise RuntimeError("Ошибка подключения! Сначала вызови init_rabbit()")
+        try:
+            if self._connection and not self._connection.is_closed:
+                logger.debug("Соединение с RabbitMQ в порядке!")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Произошла непредвиденная ошибка {e}")
+            return False
 
     async def close(self):
-        if self.connection:
-            self.connection.close()
-            self.connection = None
-            self.channel = None
+        if self._connection:
+            await self._connection.close()
+            self._connection = None
+            self._is_initialized = False
+            self._channel = None
             self._rabbit_url = None
             logger.info("RabbitManager закрыт")
 
 
 rabbit_manager = RabbitManager()
 
-
-async def main():
-    # Инициализация и проверка соединения
-    try:
-        settings = Settings()
-
-        await rabbit_manager.init_rabbit(settings.RABBIT_URL)
-        is_connected = rabbit_manager.check_connection()
-        connection = rabbit_manager.connection()
-        logger.info("Соединение с RabbitMQ создано", connection)
-        while True:
-            pass
-
-    except Exception as e:
-        logger.error(f"Произошла непредвиденная ошибка: {e}")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

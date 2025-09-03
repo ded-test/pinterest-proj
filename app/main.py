@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 # from routes import router as photo_router
-from app.core.database import db_manager, redis_manager
+from app.core.database import db_manager, redis_manager, rabbit_manager
 from app.services.chat import manager
 from app.routes import (
     user_router,
@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 
 DATABASE_URL = settings.DATABASE_URL
 REDIS_URL = settings.REDIS_URL
+RABBIT_URL = settings.RABBIT_URL
 
 
 @asynccontextmanager
@@ -34,6 +35,11 @@ async def lifespan(app: FastAPI):
 
         logger.info("Запуск Redis")
         await redis_manager.init_redis(database_url=REDIS_URL)
+
+        logger.info("Приложение запущено")
+
+        logger.info("Запуск RabbitMQ")
+        await rabbit_manager.init_rabbit(rabbit_url=RABBIT_URL)
 
         logger.info("Приложение запущено")
 
