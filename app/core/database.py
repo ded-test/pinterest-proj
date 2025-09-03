@@ -1,14 +1,14 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
-import redis
-from typing import Optional
+import redis.asyncio as redis
+from typing import Optional, Union
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.models.base import Base
 from app.core.logger_config import get_logger
 from aio_pika import connect_robust
 import asyncio
-from app.core.config import Settings
+from app.core.config import settings
 
 logger = get_logger(__name__)
 
@@ -76,16 +76,18 @@ class RedisManager:
     async def init_redis(self, database_url: str):
         try:
             self.redis = redis.from_url(
-                database_url, decode_responses=True, encoding="utf-8"
+                database_url, decode_responses=False, encoding="utf-8"
             )
-            self.redis.ping()
+            await self.redis.ping()
             self._database_url = database_url
             logger.info("Redis запущен")
         except Exception as e:
             self.redis = None
             raise RuntimeError(f"Ошибка запуска Redis: {e}")
 
-    async def set(self, key: str, value: str, expire: Optional[int] = None):
+    async def set(
+        self, key: str, value: Union[str, bytes], expire: Optional[int] = None
+    ):
         if not self.redis:
             raise RuntimeError("Вызови init_db() сначала")
         await self.redis.set(key, value, ex=expire)

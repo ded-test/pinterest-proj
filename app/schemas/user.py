@@ -8,6 +8,7 @@ from app.security.password import (
 
 
 class UserBase(BaseModel):
+    id: int
     username: str
     email: EmailStr
 

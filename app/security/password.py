@@ -35,5 +35,5 @@ def get_password_hash(password: str) -> bytes:
 
 
 def verify_password(input_password: str, hashed_password: str) -> bool:
-    peppered_password = input_password + settings.PEPPER
+    peppered_password = input_password + settings.PEPPER_SECRET
     return bcrypt.checkpw(peppered_password.encode("utf-8"), hashed_password)
