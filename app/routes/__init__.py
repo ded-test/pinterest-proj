@@ -1,5 +1,5 @@
-from .user import app as user_router
+from .auth import app as auth_router
 
 __all__ = [
-    "user_router",
+    "auth_router",
 ]

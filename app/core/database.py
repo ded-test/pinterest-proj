@@ -168,4 +168,3 @@ class RabbitManager:
 
 
 rabbit_manager = RabbitManager()
-
