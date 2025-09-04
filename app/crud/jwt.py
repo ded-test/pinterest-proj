@@ -1,6 +1,8 @@
 import bcrypt
 import uuid
 
+from typing import Optional
+
 from app.core.logger_config import get_logger
 from app.security.jwt import jwt_manager
 from app.models.refresh_token import RefreshToken
@@ -45,23 +47,33 @@ class JWTCRUD:
             logger.exception("Ошибка создания refresh-токена")
             raise
 
-    def check_token(self, user_id: int, token: str) -> bool:
+    async def check_token(self, token: str) -> Optional[dict]:
         try:
             token_data = jwt_manager.decode_refresh_token(token)
+            user_id = int(token_data.get("sub"))
             jti = token_data["jti"]
 
-            stored_hash = redis_manager.get(f"user:{user_id}:refresh_token:{jti}")
-
+            stored_hash = await redis_manager.get(f"user:{user_id}:refresh_token:{jti}")
             if not stored_hash:
-                return False
+                logger.warning(
+                    f"Refresh token revoked or not found: user={user_id}, jti={jti}"
+                )
+                return None
 
-            return self._verify_token(stored_hash, token)
+            if not self._verify_token(stored_hash, token):
+                logger.warning(
+                    f"Refresh token hash mismatch: user={user_id}, jti={jti}"
+                )
+                return None
 
-        except (JWTExpiredError, JWTInvalidTokenError):
-            return False
+            return token_data
+
+        except (JWTExpiredError, JWTInvalidTokenError) as e:
+            logger.info(f"Invalid refresh token: {e}")
+            return None
         except Exception:
-            logger.exception("Неожиданная ошибка при проверке токена")
-            return False
+            logger.exception("Неожиданная ошибка при проверке refresh токена")
+            return None
 
     async def _save_token_redis(
         self, user_id: int, jti: str, token_hash: bytes, exp_timestamp: str
