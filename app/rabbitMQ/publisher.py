@@ -38,9 +38,11 @@ class RabbitPublisher:
 
             channel = rabbit_manager._channel
 
+            exchange_type_enum = aio_pika.ExchangeType(exchange_type.lower())
+
             exchange = await channel.declare_exchange(
                 exchange_name,
-                type=aio_pika.ExchangeType(exchange_type.upper()),
+                type=exchange_type_enum,
                 durable=durable,
             )
 
@@ -64,6 +66,3 @@ class RabbitPublisher:
         except Exception as e:
             logger.error(f"Произошла непредвиденная ошибка публикации: {e}")
             return False
-
-
-rabbit_publisher = RabbitPublisher()

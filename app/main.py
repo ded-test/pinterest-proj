@@ -15,6 +15,7 @@ from app.core.logger_config import get_logger
 from fastapi.responses import HTMLResponse
 from app.core.templates import templates
 from app.security.jwt import jwt_manager
+from app.core.MessageQueues import test_exchange
 
 logger = get_logger(__name__)
 
@@ -39,7 +40,7 @@ async def lifespan(app: FastAPI):
         logger.info("Приложение запущено")
 
         logger.info("Запуск RabbitMQ")
-        await rabbit_manager.init_rabbit(rabbit_url=RABBIT_URL)
+        await rabbit_manager.init_rabbit(settings.RABBIT_URL)
 
         logger.info("Приложение запущено")
 
