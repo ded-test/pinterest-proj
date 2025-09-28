@@ -7,7 +7,7 @@ from pathlib import Path
 from app.core.database import db_manager, redis_manager, rabbit_manager
 from app.services.chat import manager
 from app.routes import (
-    auth_router,
+    user_router,
 )
 from app.core.config import settings
 from app.models.base import Base
@@ -15,7 +15,7 @@ from app.core.logger_config import get_logger
 from fastapi.responses import HTMLResponse
 from app.core.templates import templates
 from app.security.jwt import jwt_manager
-from app.core.MessageQueues import test_exchange
+
 
 logger = get_logger(__name__)
 
@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(router=auth_router)
+app.include_router(router=user_router)
 # app.include_router(router=photo_router, prefix="/api/photo")
 
 
@@ -80,6 +80,6 @@ async def get_chat(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
 
 
-# python -m app.main
+# python -m app.main | python -m uvicorn app.main:app --reload
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)

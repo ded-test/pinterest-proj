@@ -1,8 +1,8 @@
 from app.core.logger_config import get_logger
 
-from .api_client import CurrencyParser
-from .currency_cache import CurrencyCache
-from .currency_publisher import CurrencyPublisher
+from app.services.currency_service.api_client import CurrencyParser
+from app.services.currency_service.currency_cache import CurrencyCache
+from app.services.currency_service.currency_publisher import CurrencyPublisher
 from app.core.config import settings
 
 
