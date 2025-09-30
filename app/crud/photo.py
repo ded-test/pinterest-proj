@@ -12,10 +12,7 @@ from security.password import (
 from schemas.user import UserCreate, UserUpdate, UserChangePassword, UserLogin
 from core.logger_config import logger
 from app.models.photo import Photo
-from app.schemas.photo import PhotoCreate , PhotoUpdate
-
-
-
+from app.schemas.photo import PhotoCreate, PhotoUpdate
 
 
 class PhotoCRUD:
@@ -32,7 +29,7 @@ class PhotoCRUD:
             raise
 
     @staticmethod
-    async def get_all_photos(db : AsyncSession) -> list[Photo] :
+    async def get_all_photos(db: AsyncSession) -> list[Photo]:
         try:
             result = await db.execute(select(Photo))
             all_photos = result.scalars().all()
@@ -43,9 +40,8 @@ class PhotoCRUD:
             logger.error(f"Произошла ошибка получения всех фотографий: {e}")
             raise
 
-
     @staticmethod
-    async def create_photo(db : AsyncSession , photo_data : PhotoCreate) -> Photo:
+    async def create_photo(db: AsyncSession, photo_data: PhotoCreate) -> Photo:
         try:
             photo_dict = photo_data.model_dump()
             photo = Photo(**photo_dict)
@@ -56,26 +52,27 @@ class PhotoCRUD:
             return photo
         except Exception as e:
             await db.rollback()
-            logger.error(f'Произошла ошибка создании фото: {e}')
+            logger.error(f"Произошла ошибка создании фото: {e}")
             raise
 
     @staticmethod
-    async def update_photo(db: AsyncSession , photo_id : int , photo_update : PhotoUpdate) -> Optional[Photo]:
+    async def update_photo(
+        db: AsyncSession, photo_id: int, photo_update: PhotoUpdate
+    ) -> Optional[Photo]:
         try:
-            db_photo = await PhotoCRUD.get_by_id(db , photo_id)
+            db_photo = await PhotoCRUD.get_by_id(db, photo_id)
 
             if not db_photo:
                 logger.info(f"Обновление не удалось: фото с ID: {photo_id} не найдено")
                 return db_photo
-            
+
             update_data = photo_update.model_dump(exclude_unset=True)
 
             if not update_data:
                 logger.info(f"Не удалось обновить фотографию с ID : {photo_id}")
 
-            
-            for field , value in update_data.items():
-                setattr(db_photo , field , value)
+            for field, value in update_data.items():
+                setattr(db_photo, field, value)
 
             await db.commit()
             await db.refresh(db_photo)
@@ -83,45 +80,25 @@ class PhotoCRUD:
             return db_photo
 
         except Exception as e:
-            logger.error(f'Произошла ошибка обновления фото: {e}')
+            logger.error(f"Произошла ошибка обновления фото: {e}")
             await db.rollback()
             raise
 
     @staticmethod
-    async def delete_photo(db : AsyncSession , photo_id : int) -> bool:
+    async def delete_photo(db: AsyncSession, photo_id: int) -> bool:
         try:
-            db_photo = await PhotoCRUD.get_by_id(db , photo_id)
+            db_photo = await PhotoCRUD.get_by_id(db, photo_id)
 
             if not db_photo:
-                logger.error(f'Фото с ID: {photo_id} не существует')
+                logger.error(f"Фото с ID: {photo_id} не существует")
                 return False
-            
+
             await db.delete(db_photo)
             await db.commit()
-            logger.info(f'Фото с ID: {photo_id} успешно удалено')
+            logger.info(f"Фото с ID: {photo_id} успешно удалено")
             return True
 
         except Exception as e:
-            logger.error(f'Произошла ошибка удаления фото: {e}')
+            logger.error(f"Произошла ошибка удаления фото: {e}")
             await db.rollback()
             return False
-            
-        
-
-
-        
-
-
-    
-
-
-
-
-
-
-            
-
-
-
-
-            
