@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 from app.models.base import Base
 from sqlalchemy import ForeignKey
-from app.models.__init__ import Pin
+# from app.models.__init__ import Pin
 
 
 class Photo(Base):

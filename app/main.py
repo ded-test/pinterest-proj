@@ -3,11 +3,12 @@ import uvicorn
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-# from routes import router as photo_router
+from app.routes import photo_router , pin_router
 from app.core.database import db_manager, redis_manager, rabbit_manager
 from app.services.chat import manager
 from app.routes import (
-    user_router,
+    auth_router,
+
 )
 from app.core.config import settings
 from app.models.base import Base
@@ -55,7 +56,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(router=user_router)
+app.include_router(router=auth_router)
+app.include_router(router=pin_router)
+app.include_router(router=photo_router)
 # app.include_router(router=photo_router, prefix="/api/photo")
 
 

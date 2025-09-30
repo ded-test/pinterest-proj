@@ -11,7 +11,7 @@ from app.security.auth import get_current_user
 from app.models.pin import Pin
 
 
-router = APIRouter(prefix="/pins", tags=["pins"])
+router = APIRouter(prefix="/api/pins", tags=["pins"])
 
 
 @router.get("/", response_model=list[PinResponse])
